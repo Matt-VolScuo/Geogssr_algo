@@ -15,6 +15,15 @@ locator = Nominatim(user_agent='myGeocoder')
 class Geogssr():
 
     def __init__(self):
+        """
+        Contains all the main variables initialisation and runs the startup functions in a specific order.
+        
+        parameters:
+        None
+        ------
+        returns:
+        None
+        """
 
         #tk window creation
         self.root_tk = tk.Tk()
@@ -58,9 +67,6 @@ class Geogssr():
         self.number_plays_display.set(str(self.number_plays.get()) +'/10' )
         self.create_widgets()
         
-        
-       
-
         #startup functions
         self.data =  self.load_data(self.file)
         self.data_neighbours = self.load_data_neighbours(self.neighbours_file)
@@ -71,6 +77,17 @@ class Geogssr():
         #self.menu()
 
     def intro(self):
+        """
+        Complementary of the __init__ startup function, it only runs one, when the program is first launched.
+        Its purpose is to create a TopLevel welcome screen that teaches the user how to handle the app. It is 
+        separated from the __intro__ function so that the code is better organized and more readable.
+        
+        parameters:
+        None
+        ------
+        returns:
+        None
+        """
         self.intro_window = tk.Toplevel(self.root_tk, bg=self.bg_color)
         self.intro_window.grab_set()
 
@@ -84,7 +101,18 @@ class Geogssr():
         self.rules_textbox.insert(tk.END,self.rules_text)
 
 
-    def create_widgets(self):
+    def create_widgets(self):  
+        """
+        Contains the code to create all of the tkinter widgets of the user interface. Two frames 
+        are created inside our root tkinter window (frame_left and frame_right),then, placing the 
+        elements according to their respective frames using the pack() geometry manager.
+        
+        parameters:
+        None
+        ------
+        returns:
+        None
+        """
 
 
         #creating 2 frames to place items inside
@@ -96,7 +124,7 @@ class Geogssr():
         self.frame_right.grid(row=0,column=1)
         self.frame_right.pack_propagate(False)
 
-         #create the map widget with tkintermapview and sets map
+        #create the map widget with tkintermapview and sets map
         self.map_widget = tkintermapview.TkinterMapView(self.frame_right, width=1200, height=700, corner_radius=10)
         self.map_widget.set_tile_server("https://a.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}.png")
 
@@ -151,6 +179,18 @@ class Geogssr():
 
 
     def difficulty_toplevel(self):
+        """
+        Handles the creation of a TopLevel (and the widgets it contains) that opens when the user clicks
+        on the « change difficulty level » button. This toplevel contains an OptionMenu widget that
+        allows to choose between 3 difficulty setting (easy, medium, and hard). It also pauses the timer
+        so that the game is « paused ».
+        
+        parameters:
+        None
+        ------
+        returns:
+        None
+        """
         self.pause_time = self.current_time
         self.timer = False
         self.difficulty_window = tk.Toplevel(self.root_tk, bg=self.bg_color)
@@ -163,6 +203,17 @@ class Geogssr():
         self.confirm_button.pack()
     
     def close_difficulty_menu(self):
+        """
+        Called when the user confirms the new difficulty choice. It destroys the
+        difficulty_window object and handles the timer so that it keeps counting from 
+        where it stopped before opening the difficulty window.
+
+        parameters:
+        None
+        ------
+        returns:
+        None
+        """
         self.current_time = time.time()
         self.time_diff = datetime.timedelta(seconds = int(self.current_time- self.pause_time))
         self.start_time = self.start_time + self.time_diff.seconds
@@ -173,7 +224,16 @@ class Geogssr():
         
 
     def update_clock(self):
+        """
+        Handles the timer for each guess of the game. Checks if the game is paused or not, and advances accordingly.
+        In the case of the time running out, it resets itself and calls the functions necessary to start the guessing of a new flag.
         
+        parameters:
+        None
+        ------
+        returns:
+        None
+        """
         if self.intro_done:
             if self.timer:
                 self.current_time = time.time()
@@ -200,8 +260,16 @@ class Geogssr():
         self.timer_label.after(1000, self.update_clock)
 
 
-    #handles a click on the map ==> checks if country is the right one, displays a new country if yes
     def add_marker_event(self, event):
+        """
+        handles a click on the map: checks if country is the right one, displays a new country if it is.
+        
+        parameters:
+        event
+        ------
+        returns:
+        None
+        """
         location = locator.reverse((event[0], event[1]))
         print(location.raw['address'])
         country_code = location.raw['address']['country_code'].upper()
@@ -219,10 +287,17 @@ class Geogssr():
             print('True', new_flag)
 
         
-
-
-    #load csv file with country names/codes in a dictionnary
+        
     def load_data(self, file):
+        """
+        loads the csv file with country names/codes in a dictionnary.
+        
+        parameters: 
+        file: a csv file
+        ------
+        returns:
+        data(dictionnary): the data of the csv file
+        """
             with open(file, newline = "") as csvfile:
                 reader = csv.reader(csvfile, delimiter = ",")
                 data = {}
@@ -234,6 +309,15 @@ class Geogssr():
             return data
         
     def load_data_neighbours(self,file):
+        """
+        loads the json file with neighbours of each country in a dictionnary.
+        
+        parameters: 
+        file: a json file
+        ------
+        returns:
+        jsondata(dictionnary): the data of the json file
+        """
         jsondata= {}
         with open(file, 'r') as jsonfile:
             tmp = json.load(jsonfile)
@@ -247,8 +331,17 @@ class Geogssr():
 
 
 
-    #defines the size of the label depending on size of the displayed flag and a max threshold
+  
     def label_size(self, flag):
+        """
+        defines the size of the label depending on size of the displayed flag and a max threshold.
+        
+        parameters:
+        flag(?)
+        ------
+        returns:
+        max_flag_width(int) or width(int): width used to display the flag
+        """
         max_flag_width = self.max_flag_width
         width = flag.width()
         if width > max_flag_width:
@@ -256,8 +349,17 @@ class Geogssr():
         return width
 
 
-    #picks a random flag
+    
     def random_flag(self):
+        """
+        picks a random country/flag.
+        
+        parameters:
+        None
+        ------
+        returns:
+        countries[number](string): a random country code
+        """
         number = randint(0,len(self.data))
         countries = list(self.data.keys())
         self.number_plays.set(self.number_plays.get() + 1)
@@ -267,8 +369,16 @@ class Geogssr():
         return countries[number]
 
 
-    #displays new flag
-    def country_display(self, country_code):        
+    def country_display(self, country_code):
+        """
+        updates displays to match the new flag
+        
+        parameters:
+        country_code(string): a 2 letter country code
+        ------
+        returns:
+        None
+        """
         country_code = country_code.lower()
         flag_path = self.flags_folder + country_code + ".png"
         self.img = tk.PhotoImage(file=flag_path)
@@ -283,6 +393,15 @@ class Geogssr():
         self.img_label.place(relx=0, rely=1.0, anchor='sw')
 
     def hint(self):
+        """
+        looks for and displays a hint for the player, which is the neighbouring coutries to the one they are looking for.
+        
+        parameters:
+        None
+        ------
+        returns:
+        None
+        """
         self.hint_text = self.data_neighbours[self.current_country_code.lower()]
         if self.hint_text:
             self.hint_text = f"{self.current_country}'s neighbors are : \n{self.hint_text}\n"
@@ -292,6 +411,15 @@ class Geogssr():
             self.hint_textbox.insert(tk.END, self.hint_text)
 
     def end_of_game(self):
+        """
+        ends the game, shows the player they score and allows them to chooose between restarting a new game or quitting the app.
+        
+        parameters:
+        None
+        ------
+        returns:
+        None
+        """
         self.timer = False
         self.endgame_window = tk.Toplevel(self.root_tk, bg = self.bg_color)
         self.endgame_window.grab_set()
@@ -308,6 +436,15 @@ class Geogssr():
         
     
     def restart_game(self):
+        """
+        relaunches a new game.
+        
+        parameters:
+        None
+        ------
+        returns:
+        None
+        """
         self.timer = True
         self.start_time = time.time()
         self.endgame_window.destroy()
